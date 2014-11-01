@@ -2,14 +2,16 @@ package org.abrantix.tuner;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.wearable.view.WatchViewStub;
-import android.util.Log;
 import android.widget.TextView;
 
-public class Tuner extends Activity {
+public class Tuner extends Activity implements AudioProcessor.AudioProcessorListener {
 
     private static final String TAG = "Tuner";
     private TextView mTextView;
+    private FFTGraph mGraph;
+    private AudioProcessor mProcessor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,12 +21,27 @@ public class Tuner extends Activity {
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-                mTextView = (TextView) stub.findViewById(R.id.text);
-                Log.d(TAG, "TextView: " + mTextView.getText() + " view=" + mTextView);
+                mGraph = (FFTGraph) findViewById(R.id.fft_graph);
+                if (mProcessor == null) {
+                    mProcessor = new AudioProcessor();
+                    mProcessor.setListener(Tuner.this);
+                    mProcessor.start();
+                }
             }
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        mProcessor.stop();
+        super.onDestroy();
+    }
 
-
+    @Override
+    public void onAudioProcessed(@NonNull AudioProcessor processor, double dominantFreq,
+                                 double maxFreq, double[] fft, double maxNorm) {
+        if (mGraph != null) {
+            mGraph.setFft(dominantFreq, maxFreq, fft, maxNorm);
+        }
+    }
 }
