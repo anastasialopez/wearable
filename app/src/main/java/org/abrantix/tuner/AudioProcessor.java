@@ -117,7 +117,7 @@ public class AudioProcessor {
         @Override
         public void handleMessage(Message msg) {
             mAudioProcessor.read();
-            this.sendEmptyMessageDelayed(0, 100);
+            this.sendEmptyMessageDelayed(0, 0);
         }
     }
 
