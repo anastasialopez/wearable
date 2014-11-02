@@ -6,9 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.wearable.view.WatchViewStub;
 import android.widget.TextView;
 
-public class Tuner extends Activity implements AudioProcessor.AudioProcessorListener {
+public class TunerActivity extends Activity implements AudioProcessor.AudioProcessorListener {
 
-    private static final String TAG = "Tuner";
+    private static final String TAG = "TunerActivity";
     private TextView mTextView;
     private FFTGraph mGraph;
     private AudioProcessor mProcessor;
@@ -24,7 +24,7 @@ public class Tuner extends Activity implements AudioProcessor.AudioProcessorList
                 mGraph = (FFTGraph) findViewById(R.id.fft_graph);
                 if (mProcessor == null) {
                     mProcessor = new AudioProcessor();
-                    mProcessor.setListener(Tuner.this);
+                    mProcessor.setListener(TunerActivity.this);
                     mProcessor.start();
                 }
             }
