@@ -1,6 +1,7 @@
 package org.abrantix.tuner;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +16,15 @@ public class NoteFreqTable {
         mBaseFreqs.add(32.7032); // C1
         mBaseFreqs.add(34.6478); // C#
         mBaseFreqs.add(36.7081); // D
-        mBaseFreqs.add(34.6478); // D#
-        mBaseFreqs.add(32.7032); // E
-        mBaseFreqs.add(34.6478); // F
-        mBaseFreqs.add(32.7032); // F#
-        mBaseFreqs.add(34.6478); // G
-        mBaseFreqs.add(32.7032); // G#
-        mBaseFreqs.add(34.6478); // A
-        mBaseFreqs.add(32.7032); // A#
-        mBaseFreqs.add(34.6478); // B
+        mBaseFreqs.add(38.8909); // D#
+        mBaseFreqs.add(41.2034); // E
+        mBaseFreqs.add(43.6535); // F
+        mBaseFreqs.add(46.2493); // F#
+        mBaseFreqs.add(48.9994); // G
+        mBaseFreqs.add(51.9131); // G#
+        mBaseFreqs.add(55.0000); // A
+        mBaseFreqs.add(58.2705); // A#
+        mBaseFreqs.add(61.7354); // B
     }
 
     private static List<String> mBaseNotes = new ArrayList<String>();
@@ -61,6 +62,7 @@ public class NoteFreqTable {
                 note.mName = note.mName.charAt(0) + "" + octave + "" +
                         (note.mName.length() > 1 ? note.mName.charAt(1) : "");
                 note.mFreq = mBaseFreqs.get(noteIdx) * Math.pow(2, octave - 1);
+                list.add(note);
             }
         }
         return list;
@@ -71,6 +73,8 @@ public class NoteFreqTable {
         Note closestNote = null;
         double minDist = Double.MAX_VALUE;
         for (Note note : mNotes) {
+            Log.d("TAG", "note: " + note.mName);
+            Log.d("TAG", "note: " + note.mFreq);
             final double dist = Math.abs(freq - note.mFreq);
             if (dist > minDist) {
                 break;
@@ -80,6 +84,11 @@ public class NoteFreqTable {
         }
         return closestNote;
     }
+
+    public Note get(int i) {
+        return mNotes.get(i);
+    }
+
 
     public static class Note {
         String mName;

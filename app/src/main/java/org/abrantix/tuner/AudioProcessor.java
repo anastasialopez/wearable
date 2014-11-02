@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Created by fabrantes on 01/11/14.
@@ -90,7 +91,8 @@ public class AudioProcessor {
                                 imFftResult[i] * imFftResult[i]);
             realPlusImLog[i] = 10 * Math.log10(realPlusIm[i]);
 
-            if (i != 0 && realPlusIm[i] > highestFreqVal) {
+            final double freq = i * (mSampleRateHz / (double) mFftSampleSize);
+            if (freq > 800 && realPlusIm[i] > highestFreqVal) {
                 highestFreq = i;
                 highestFreqVal = realPlusIm[i];
             }
@@ -101,6 +103,8 @@ public class AudioProcessor {
 //        mDominantFreq += (highestFreq - mDominantFreq) * mSmooth;
 
         if (mListener != null) {
+            // mDominantFreq = mDominantFreq / (360.0 / (2 * Math.PI));
+            Log.d("TAG", "Dominant Freq: " + mDominantFreq);
             mListener.onAudioProcessed(this, mDominantFreq, mSampleRateHz / 2, realPlusIm,
                     realPlusIm[0] / 2);
         }

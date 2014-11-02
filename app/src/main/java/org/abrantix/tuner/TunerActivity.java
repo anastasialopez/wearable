@@ -1,17 +1,27 @@
 package org.abrantix.tuner;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.wearable.view.WatchViewStub;
-import android.widget.TextView;
+import android.view.View;
 
 public class TunerActivity extends Activity implements AudioProcessor.AudioProcessorListener {
 
     private static final String TAG = "TunerActivity";
-    private TextView mTextView;
+
+    private static final int MODE_AUTO_TUNE = 99;
+    private static final int MODE_NORMAL_TUNE = 66;
+    private static final int VOICE_REC_REQ_CODE = 123;
+
+    private int mMode = MODE_NORMAL_TUNE;
+    private TunerText mNoteLabel;
     private FFTGraph mGraph;
     private AudioProcessor mProcessor;
+    private NoteFreqTable mNoteTable;
+    private NoteFreqTable.Note mTargetNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +31,23 @@ public class TunerActivity extends Activity implements AudioProcessor.AudioProce
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
+                mNoteLabel = (TunerText) findViewById(R.id.note_label);
+                if (mNoteTable == null) {
+                    mNoteTable = new NoteFreqTable(3, 8);
+                    mTargetNote = mNoteTable.get(12 * 3 + 4);
+                }
                 mGraph = (FFTGraph) findViewById(R.id.fft_graph);
                 if (mProcessor == null) {
                     mProcessor = new AudioProcessor();
                     mProcessor.setListener(TunerActivity.this);
                     mProcessor.start();
                 }
+                mGraph.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        triggerVoice();
+                    }
+                });
             }
         });
     }
@@ -43,5 +64,19 @@ public class TunerActivity extends Activity implements AudioProcessor.AudioProce
         if (mGraph != null) {
             mGraph.setFft(dominantFreq, maxFreq, fft, maxNorm);
         }
+        final NoteFreqTable.Note note = mMode == MODE_AUTO_TUNE ?
+                mNoteTable.getClosestNote(dominantFreq) : mTargetNote;
+        final float displacement = (float) ((dominantFreq - note.mFreq) / (note.mFreq * .05f));
+        mNoteLabel.setAdaptingText(note.mName, displacement);
+        mNoteLabel.invalidate();
+    }
+
+    private void triggerVoice() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say a note");
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
+        startActivityForResult(intent, VOICE_REC_REQ_CODE);
     }
 }
